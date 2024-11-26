@@ -8,6 +8,7 @@ import (
 func buildRouter() *gin.Engine {
 	router := gin.Default()
 
+	router.StaticFile("/terrarium.js", "./templates/components/terrarium.js")
 	router.LoadHTMLGlob("templates/*/**")
 
 	router.GET("/", api.Root)
