@@ -1,7 +1,11 @@
 {{define "terrarium"}}
+
 <div
 	id="terrariumDiv"
 	style="border:2px solid #CD853F; height: 800px; width: 800px;">
 </div>
+{{.Config}}
 <script type="module" src="terrarium.js"></script>
 {{end}}
+
+{{template "terrarium" .Config}}

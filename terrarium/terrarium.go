@@ -4,8 +4,12 @@ import (
 )
 
 type Terrarium struct {
-	BeastNumber 	int
-	Size 		struct{int; int}
-	Speed 		float32
+	TotalBeastNumber 	int
+	CurrentBeastNumber	int
+	Beasts			[]Beast
+	Width			int
+	Height			int
+}
 
+func (t Terrarium) RunOneTurn() {
 }
