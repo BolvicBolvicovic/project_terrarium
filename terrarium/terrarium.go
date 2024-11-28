@@ -3,6 +3,10 @@ package terrarium
 import (
 )
 
+type Food interface {
+	AsFood(rate float64)
+}
+
 type Terrarium struct {
 	CurrentBeastNumber	int
 	CurrentPlantNumber	int

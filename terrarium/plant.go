@@ -13,6 +13,10 @@ type Plant struct {
 	food		float64
 }
 
+func (p *Plant) AsFood(herbivorRate float64) float64 {
+	return p.food * herbivorRate
+}
+
 func (p *Plant) Propagate() []*Plant {
 
 	generation := p.Generation + 1
