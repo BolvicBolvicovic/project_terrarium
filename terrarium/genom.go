@@ -87,6 +87,24 @@ func (g *Genom) IsSameSpecies(otherGenom *Genom) bool {
 	return result < SameSpeciesThreshold
 }
 
+func (g *Genom) CopyRandomGenre() *Genom {
+	genom := &Genom{
+		HungerThreshold: g.HungerThreshold,
+		vision: g.vision,
+		stamina: g.stamina,
+		speed: g.speed,
+		strenght: g.strenght,
+		carnivor: g.carnivor,
+		herbivor: g.herbivor,
+		GestationPeriod: g.GestationPeriod,
+		SexualMaturityAge: g.SexualMaturityAge,
+		IsGestating: false,
+		CanGestate: lib.RandomChoice(true, false),
+	}
+	genom.UpdateMetabolism()
+	return genom
+}
+
 func NewGenom(HungerThreshold, ThirstThreshold, vision, stamina, speed, strenght, carnivor, herbivor float64, GestationPeriod, SexualMaturityAge int, CanGestate bool) (*Genom, error) {
 	genes := &Genom{
 		HungerThreshold: HungerThreshold,

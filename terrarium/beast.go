@@ -107,67 +107,16 @@ func (b *Beast) Birth() *Beast {
 	return newBorn
 }
 
-func (b *Beast) moveByBorder(targetX, targetY, width, height float64) {
-	if math.Abs(targetX-b.Position.X) > (width / 2) {
-		if b.Position.X < targetX {
-			b.Position.X -= b.Genom.speed
-			if b.Position.X < 0 {
-				b.Position.X = width - 1
-			}
-		} else {
-			b.Position.X += b.Genom.speed
-			if b.Position.X >= width {
-				b.Position.X = 0
-			}
-		}
-	} else {
-		b.moveByCenter(targetX, b.Position.Y)
-	}
-
-	if math.Abs(targetY-b.Position.Y) > (height / 2) {
-		if b.Position.Y < targetY {
-			b.Position.Y -= b.Genom.speed
-			if b.Position.Y < 0 {
-				b.Position.Y = height - 1
-			}
-		} else {
-			b.Position.Y += b.Genom.speed
-			if b.Position.Y >= height {
-				b.Position.Y = 0
-			}
-		}
-	} else {
-		b.moveByCenter(b.Position.X, targetY)
-	}
-}
-
-func (b *Beast) moveByCenter(x, y float64) {
-	if b.Position.X < x {
-		b.Position.X += b.Genom.speed
-	} else if b.Position.X > x {
-		b.Position.X -= b.Genom.speed
-	}
-
-	if b.Position.Y < y {
-		b.Position.Y += b.Genom.speed
-	} else if b.Position.Y > y {
-		b.Position.Y -= b.Genom.speed
-	}
-}
-
-func (b *Beast) MoveTowardXY(x, y, mapWidth, mapHeight float64) {
-	costByCenter := math.Abs(x - b.Position.X) + math.Abs(y - b.Position.Y)
-	
-	deltaX := math.Abs(x - b.Position.X)
-	deltaY := math.Abs(y - b.Position.Y)
-
-	wrapX := math.Min(deltaX, mapWidth-deltaX)
-	wrapY := math.Min(deltaY, mapHeight-deltaY)
-
-	costByBorder := wrapX + wrapY
-	if costByCenter < costByBorder {
-		b.moveByCenter(x, y)
-	} else {
-		b.moveByBorder(x, y, mapWidth, mapHeight)
+func (b *Beast) CopyRandomGenre() *Beast {
+	return &Beast{
+		Name: b.Name,
+		Generation: 0,
+		Genom: b.Genom.CopyRandomGenre(),
+		Position: b.Position.Copy(),
+		health: 1,
+		hunger: 0,
+		alive: true,
+		gestationCycle: 0,
+		embryon: nil,
 	}
 }
