@@ -12,8 +12,8 @@ type Position struct {
 
 func RandomPosition() *Position {
 	return &Position{
-		X: rand.Float64(),
-		Y: rand.Float64(),
+		X: rand.Float64() * 100,
+		Y: rand.Float64() * 100,
 	}
 }
 
@@ -76,20 +76,20 @@ func (p *Position) moveByCenter(x, y, speed float64) {
 	}
 }
 
-func (p *Position) MoveTowardXY(x, y, mapWidth, mapHeight, speed float64) {
-	costByCenter := math.Abs(x - p.X) + math.Abs(y - p.Y)
+func (p *Position) MoveTowardPosition(pos *Position, mapWidth, mapHeight, speed float64) {
+	costByCenter := math.Abs(pos.X - p.X) + math.Abs(pos.Y - p.Y)
 	
-	deltaX := math.Abs(x - p.X)
-	deltaY := math.Abs(y - p.Y)
+	deltaX := math.Abs(pos.X - p.X)
+	deltaY := math.Abs(pos.Y - p.Y)
 
 	wrapX := math.Min(deltaX, mapWidth-deltaX)
 	wrapY := math.Min(deltaY, mapHeight-deltaY)
 
 	costByBorder := wrapX + wrapY
 	if costByCenter <= costByBorder {
-		p.moveByCenter(x, y, speed)
+		p.moveByCenter(pos.X, pos.Y, speed)
 	} else {
-		p.moveByBorder(x, y, mapWidth, mapHeight, speed)
+		p.moveByBorder(pos.X, pos.Y, mapWidth, mapHeight, speed)
 	}
 }
 

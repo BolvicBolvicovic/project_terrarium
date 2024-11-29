@@ -7,13 +7,16 @@ import (
 )
 
 type Plant struct {
-	Position	*lib.Position
-	Generation	int
+	Position	*lib.Position	`json:"position"`
+	Generation	int		`json:"generation"`
 
 	food		float64
+	Alive		bool
 }
 
-func (p *Plant) AsFood(herbivorRate float64) float64 {
+// Food interface
+func (p Plant) GetPosition() *lib.Position { return p.Position }
+func (p Plant) AsFood(herbivorRate float64) float64 {
 	return p.food * herbivorRate
 }
 
@@ -29,42 +32,51 @@ func (p *Plant) Propagate() []*Plant {
 		return newFood
 	}()
 
-	newPlants := make([]*Plant, 4)
-	newPlants[0] = &Plant{
+	newPlants := make([]*Plant, 2)
+	newPlants0 := &Plant{
 		Position: &lib.Position{
 			X: p.Position.X + 0.1,
 			Y: p.Position.Y,
 		},
 		Generation: generation,
 		food: food,
+		Alive: true,
 	}
 
-	newPlants[1] = &Plant{
+	newPlants1 := &Plant{
 		Position: &lib.Position{
 			X: p.Position.X - 0.1,
 			Y: p.Position.Y,
 		},
 		Generation: generation,
 		food: food,
+		Alive: true,
 	}
 
-	newPlants[2] = &Plant{
+	newPlants2 := &Plant{
 		Position: &lib.Position{
 			X: p.Position.X,
 			Y: p.Position.Y + 0.1,
 		},
 		Generation: generation,
 		food: food,
+		Alive: true,
 	}
 
-	newPlants[3] = &Plant{
+	newPlants3 := &Plant{
 		Position: &lib.Position{
 			X: p.Position.X,
 			Y: p.Position.Y - 0.1,
 		},
 		Generation: generation,
 		food: food,
+		Alive: true,
 	}
+	newPlants[0] = lib.RandomChoice(newPlants0, newPlants1)
+	newPlants[1] = lib.RandomChoice(newPlants2, newPlants3)
+	
+	newPlants[0] = lib.RandomChoice(newPlants[0], nil)
+//	newPlants[1] = lib.RandomChoice(newPlants[1], nil)
 
 	return newPlants
 }
@@ -74,5 +86,6 @@ func NewRandomPlant() *Plant {
 		Position: lib.RandomPosition(),
 		Generation: 0,
 		food: rand.Float64(),
+		Alive: true,
 	}
 }

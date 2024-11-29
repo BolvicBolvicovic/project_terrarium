@@ -105,7 +105,7 @@ func (g *Genom) CopyRandomGenre() *Genom {
 	return genom
 }
 
-func NewGenom(HungerThreshold, ThirstThreshold, vision, stamina, speed, strenght, carnivor, herbivor float64, GestationPeriod, SexualMaturityAge int, CanGestate bool) (*Genom, error) {
+func NewGenom(HungerThreshold, vision, stamina, speed, strenght, carnivor, herbivor float64, GestationPeriod, SexualMaturityAge int, CanGestate bool) (*Genom, error) {
 	genes := &Genom{
 		HungerThreshold: HungerThreshold,
 		vision: vision,
