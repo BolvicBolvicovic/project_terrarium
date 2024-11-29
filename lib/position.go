@@ -12,8 +12,8 @@ type Position struct {
 
 func RandomPosition() *Position {
 	return &Position{
-		X: rand.Float64() * 100,
-		Y: rand.Float64() * 100,
+		X: rand.Float64() * 10,
+		Y: rand.Float64() * 10,
 	}
 }
 

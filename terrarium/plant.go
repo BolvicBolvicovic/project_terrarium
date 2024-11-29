@@ -16,9 +16,8 @@ type Plant struct {
 
 // Food interface
 func (p Plant) GetPosition() *lib.Position { return p.Position }
-func (p Plant) AsFood(herbivorRate float64) float64 {
-	return p.food * herbivorRate
-}
+func (p Plant) AsFood(herbivorRate float64) float64 { return p.food * herbivorRate }
+func (p Plant) AsSelf() interface{} { return p }
 
 func (p *Plant) Propagate() []*Plant {
 

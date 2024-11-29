@@ -9,6 +9,7 @@ import (
 type Food interface {
 	AsFood(rate float64) float64
 	GetPosition() *lib.Position
+	AsSelf() interface{}
 }
 
 type Terrarium struct {
@@ -16,6 +17,7 @@ type Terrarium struct {
 	CurrentPlantNumber	int 		`json:"current_plant_number"`
 	CurrentIteration	int 		`json:"current_iteration"`
 	MaxIteration		int 		`json:"max_iteration"`
+	MaxPlants		int		`json:"max_plants"`
 	Beasts			[]*Beast	`json:"beasts"`
 	Plants			[]*Plant	`json:"plants"`
 	Width			float64		`json:"w"`
@@ -27,8 +29,17 @@ func (t *Terrarium) RunOneTurn() {
 	for i, beast := range t.Beasts {
 		beast.Hungrier()
 		if !beast.Alive { continue }
+		if beast.Age >= 10 && beast.Age <= 20 {
+			for j, b := range t.Beasts {
+				if i == j { continue }
+				if b.Alive && beast.Position.Collide(b.Position) && beast.CanMate(b) {
+					beast.Mate(b)
+					break
+				}
+			}
+			continue
+		}
 		violenceState := beast.CanAttack()
-		hasEaten := false
 		switch violenceState {
 		case All:
 			for j, b := range t.Beasts {
@@ -37,7 +48,6 @@ func (t *Terrarium) RunOneTurn() {
 					beast.Attack(b)
 					if !b.Alive {
 						beast.Eat(b.AsFood(beast.Genom.carnivor))
-						hasEaten = true
 						break
 					}
 				}
@@ -49,29 +59,24 @@ func (t *Terrarium) RunOneTurn() {
 					beast.Attack(b)
 					if !b.Alive {
 						beast.Eat(b.AsFood(beast.Genom.carnivor))
-						hasEaten = true
 						break
 					}
 				} else if b.Alive && beast.Position.Collide(b.Position) && beast.CanMate(b) {
 					beast.Mate(b)
-				}
-			}
-			if !hasEaten {
-				for _, p := range t.Plants {
-					if p.Alive {
-						p.Alive = false
-						beast.Eat(p.AsFood(beast.Genom.herbivor))
-						break
-					}
+					break
 				}
 			}
 		case None:
+			mate := false
 			for j, b := range t.Beasts {
 				if i == j { continue }
 				if b.Alive && beast.Position.Collide(b.Position) && beast.CanMate(b) {
 					beast.Mate(b)
+					mate = true
+					break
 				}
 			}
+			if mate { continue }
 			for _, p := range t.Plants {
 				if p.Alive {
 					p.Alive = false
@@ -116,18 +121,31 @@ func (t *Terrarium) RunOneTurn() {
 			beast.Position.MoveTowardPosition(beast.CurrentTarget.GetPosition(), t.Width, t.Height, beast.Genom.speed)
 		}
 	}
-	for _, plant := range t.Plants {
-		prop := plant.Propagate()
-		for _, p := range prop {
-			if p != nil {
-				t.Plants = append(t.Plants, p)
+	if t.CurrentIteration % 2 == 0 {
+		for _, plant := range t.Plants {
+			prop := plant.Propagate()
+			for _, p := range prop {
+				if p != nil {
+					t.Plants = append(t.Plants, p)
+				}
 			}
+			plant.Alive = false
 		}
-		plant.Alive = false
+	}
+	if t.CurrentIteration % 15 == 0 {
+		newPlants := make([]*Plant, 0)
+		for i, plant := range t.Plants {
+			if i > t.CurrentPlantNumber / 4 || i > t.MaxPlants { break }
+			plant.Alive = true
+			newPlants = append(newPlants, plant)
+		}
+		t.Plants = newPlants
+		t.CurrentPlantNumber = len(t.Plants)
+		log.Println("newPlants", t.CurrentPlantNumber)
 	}
 }
 
-func NewTerrarium(maxRandomBeast, maxBeastsPerSpeciesAtStart, maxRandomPlantAtStart, maxIteration int, w, h float64, beastTypes ...*Beast) *Terrarium {
+func NewTerrarium(maxRandomBeast, maxBeastsPerSpeciesAtStart, maxRandomPlantAtStart, maxIteration, maxPlants int, w, h float64, beastTypes ...*Beast) *Terrarium {
 	totalBeastNumber := len(beastTypes) * maxBeastsPerSpeciesAtStart + maxRandomBeast * maxBeastsPerSpeciesAtStart
 	beasts := make([]*Beast, 0)
 	plants := make([]*Plant, 0)
@@ -140,7 +158,7 @@ func NewTerrarium(maxRandomBeast, maxBeastsPerSpeciesAtStart, maxRandomPlantAtSt
 	}
 
 	for i := range maxRandomBeast {
-		beast := NewRandomBeast("RandomBeast_" + string(i))
+		beast := NewRandomBeast("RandomBeast" + string(i))
 		for j := 0; j < maxBeastsPerSpeciesAtStart; j++ {
 			beasts = append(beasts, beast.CopyRandomGenre())
 		}
@@ -148,16 +166,15 @@ func NewTerrarium(maxRandomBeast, maxBeastsPerSpeciesAtStart, maxRandomPlantAtSt
 
 	for range maxRandomPlantAtStart {
 		plant := NewRandomPlant()
-		log.Println(plant.Position)
 		plants = append(plants, plant)
 	}
-	log.Println("start:", len(plants))
 	
 	return &Terrarium{
 		CurrentBeastNumber: totalBeastNumber,
 		CurrentPlantNumber: maxRandomPlantAtStart,
 		CurrentIteration: 0,
 		MaxIteration: maxIteration,
+		MaxPlants: maxPlants,
 		Beasts: beasts,
 		Plants: plants,
 		Width: w,

@@ -6,7 +6,6 @@ import (
 
 var (
 	HungerRate float64	= 0.02
-	HungerDamageThreshold	= 0.6
 	HungerDamage		= 0.05
 
 	BirthDamage		= 0.05
@@ -26,6 +25,7 @@ type Beast struct {
 	Genom		*Genom		`json:"genom"`
 	Position	*lib.Position	`json:"position"`
 
+	Age		int		`json:"age"`
 	Health		float64		`json:"health"`
 	Hunger		float64		`json:"hunger"`
 	Alive		bool		`json:"alive"`
@@ -40,6 +40,7 @@ func NewBeastRandomGenre(name string, genom *Genom) *Beast {
 		Generation: 0,
 		Genom: genom,
 		Position: lib.RandomPosition(),
+		Age: 0,
 		Health: 1,
 		Hunger: 0,
 		Alive: true,
@@ -55,6 +56,7 @@ func NewRandomBeast(name string) *Beast {
 		Generation: 0,
 		Genom: NewRandomGenom(),
 		Position: lib.RandomPosition(),
+		Age: 0,
 		Health: 1,
 		Hunger: 0,
 		Alive: true,
@@ -68,9 +70,8 @@ func (b *Beast) Vision() float64 { return b.Genom.vision }
 
 // Food interface
 func (b Beast) GetPosition() *lib.Position { return b.Position }
-func (b Beast) AsFood(carnivorRate float64) float64 {
-	return b.Genom.stamina * carnivorRate
-}
+func (b Beast) AsFood(carnivorRate float64) float64 { return b.Genom.stamina * carnivorRate }
+func (b Beast) AsSelf() interface{} { return b }
 
 func (b *Beast) Eat(food float64) {
 	b.Health += food
@@ -81,7 +82,7 @@ func (b *Beast) Hungrier() bool {
 	searchForFood := false
 	b.Hunger *= (1 + b.Genom.metabolism) * HungerRate
 	if b.Hunger > b.Genom.HungerThreshold { searchForFood = true }
-	if b.Hunger > HungerDamageThreshold { b.Health -= HungerDamage * (1 - b.Genom.stamina) }
+	b.Health -= HungerDamage * (1 - b.Genom.stamina)
 	if b.Health <= 0 { b.Alive = false }
 	return searchForFood
 }
@@ -104,6 +105,10 @@ func (b* Beast) LockTarget(inRangeTargets []Food) {
 	for _, target := range inRangeTargets {
 		switch target.(type) {
 			case Beast:
+				if t, ok := target.AsSelf().(Beast); ok && b.CanMate(&t) {
+					targetLocked = target
+					break
+				}
 				currentTargetFoodValue = target.AsFood(b.Genom.carnivor)
 				if targetLocked == nil {
 					foodValue = currentTargetFoodValue
@@ -160,6 +165,7 @@ func (b *Beast) Mate(mate *Beast) {
 		Generation: generation,
 		Genom: genom,
 		Position: nil,
+		Age: 0,
 		Health: 1,
 		Hunger: 0,
 		Alive: true,
@@ -194,6 +200,7 @@ func (b *Beast) CopyRandomGenre() *Beast {
 		Generation: 0,
 		Genom: b.Genom.CopyRandomGenre(),
 		Position: b.Position.Copy(),
+		Age: 0,
 		Health: 1,
 		Hunger: 0,
 		Alive: true,
